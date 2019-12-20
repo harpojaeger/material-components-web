@@ -61,6 +61,19 @@ const smallBelowMiddleLeft = {height: anchorHeight, width: 40, top: 600, bottom:
 const wideCenter = {height: anchorHeight, width: 150, top: 490, bottom: 510, left: 450, right: 600};
 const wideTopLeft = {height: anchorHeight, width: 150, top: 20, bottom: 40, left: 20, right: 170};
 
+// The following anchor dimensions are intended to test the menu's auto-positioning and max-width behavior.
+
+// See https://github.com/material-components/material-components-web/issues/5373
+// Should result in default (TOP_START) menu layout
+const wideBelowMiddleLeftMenuJustAboveMargin = {height: anchorHeight, width: 500, top: 800, left: 200};
+const menuSurfaceHeightPlusMargin = defaultMenuSurfaceHeight + numbers.MARGIN_TO_EDGE;
+// Should result in default (TOP_START) menu layout.
+const wideBelowMiddleLeftMenuOnMargin =
+{height: anchorHeight, width: 500, top: defaultWindowHeight - menuSurfaceHeightPlusMargin, left: 200};
+// Should result in BOTTOM_START menu layout.
+const wideBelowMiddleLeftMenuOverlapsMargin =
+{height: anchorHeight, width: 500, top: defaultWindowHeight - menuSurfaceHeightPlusMargin + 1, left: 200};
+
 
 /**
  * Initializes viewport, anchor and menu surface dimensions.
@@ -436,6 +449,41 @@ testFoundation('#open from small anchor in left bottom of viewport, BOTTOM_END a
     td.verify(mockAdapter.setTransformOrigin('left bottom'));
     td.verify(mockAdapter.setPosition({left: 40, bottom: 20}));
   });
+
+testFoundation('#open from anchor in left bottom of viewport, default (TOP_START) anchor corner, LTR',
+  ({foundation, mockAdapter, clock}) => {
+    initAnchorLayout(mockAdapter, wideBelowMiddleLeftMenuJustAboveMargin, false);
+    foundation.open();
+    clock.runToFrame();
+    td.verify(mockAdapter.setTransformOrigin('center top'));
+    td.verify(mockAdapter.setPosition({left: 0, top: 0}));
+    td.verify(mockAdapter.setMaxHeight(''));
+  });
+
+testFoundation('#open from anchor in left bottom of viewport such that menu bottom is exactly MARGIN_FROM_EDGE px' +
+               ' from bottom of browser window, default (TOP_START) anchor corner, menu surface not size-constrained,'+
+               ' LTR',
+({foundation, mockAdapter, clock}) => {
+  initAnchorLayout(mockAdapter, wideBelowMiddleLeftMenuOnMargin, false);
+  foundation.open();
+  clock.runToFrame();
+  td.verify(mockAdapter.setTransformOrigin('center top'));
+  td.verify(mockAdapter.setPosition({left: 0, top: 0}));
+  td.verify(mockAdapter.setMaxHeight(defaultMenuSurfaceHeight));
+});
+
+testFoundation('#open from anchor in left bottom of viewport such that menu bottom is exactly' +
+              ' MARGIN_FROM_EDGE - 1 px from bottom of browser window, BOTTOM_START anchor corner, menu surface not' +
+              ' size-constrained, LTR',
+({foundation, mockAdapter, clock}) => {
+  initAnchorLayout(mockAdapter, wideBelowMiddleLeftMenuOverlapsMargin, false);
+  foundation.open();
+  clock.runToFrame();
+  td.verify(mockAdapter.setTransformOrigin('center top'));
+  td.verify(mockAdapter.setPosition({left: 0, top: 0}));
+  td.verify(mockAdapter.setMaxHeight(defaultMenuSurfaceHeight));
+}
+);
 
 testFoundation('#open tall surface from small anchor in left above middle of viewport, BOTTOM_START anchor corner, LTR',
   ({foundation, mockAdapter, clock}) => {
